@@ -11,11 +11,11 @@ def sendSignal(pid, sig) :
     print("Processus [%d] envoi le signal %d au processus %d" %(os.getpid(), sig, pid)) 
 
     
+if __name__ =="__main__":
+    Process = mp.Process(target= F, args =(None,))
 
-Process = mp.Process(target= F, args =(None,))
+    Process.start()
 
-Process.start()
-
-for i in range(5):
-    time.sleep(1)
-    print(f"tour n° {i}")
+    for i in range(5):
+        time.sleep(1)
+        print(f"tour n° {i}")
