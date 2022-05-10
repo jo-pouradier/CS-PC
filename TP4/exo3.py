@@ -3,7 +3,6 @@ import time
 
 
 def arreterProgramme(signal, frame):
-    """Fonction appelée quand vient l'heure d’arrêter notre programme"""
     global fin
     fin = False
 
