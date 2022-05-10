@@ -1,11 +1,11 @@
 import os
 import sys
 
-
+# chaine
 i = -1
 
 commands = [["who", "who"],
-["ps", "ps"], ["ls", "ls -l"]]
+            ["ps", "ps"], ["ls", "ls -l"]]
 
 
 for i in range(len(commands)):
@@ -14,4 +14,3 @@ for i in range(len(commands)):
         os.execlp(commands[i][0], commands[i][1])
 
 sys.exit(0)
-
