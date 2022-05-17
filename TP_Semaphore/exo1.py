@@ -2,34 +2,33 @@ import multiprocessing as mp
 import math
 
 
-def SumImpaire(T, send):
-    S = []
+def SumImpaire(T, variable_partagee, sem):
     i = 1
+    sem.acquire()
     while i <= len(T)-1:
-        S.append(T[i])
+        variable_partagee.value+=T[i]
         i += 2
-    send.send(sum(S))
+    sem.release()
 
-
-def SumPaire(T, send):
-    S = []
+def SumPaire(T, variable_partagee, sem):
     i = 0
+    sem.acquire()
     while i <= len(T)-1:
-        S.append(T[i])
+        variable_partagee.value+=T[i]
         i += 2
-    send.send(sum(S))
+    sem.release()
 
 
 if __name__ == '__main__':
     T = [i for i in range(103)]
-    send, receive = mp.Pipe()
-    P1 = mp.Process(target=SumImpaire, args=(T, send))
-    P2 = mp.Process(target=SumPaire, args=(T, send))
+    variable_partagee = mp.Value('i', 0)
+    Sem = mp.Semaphore()
+    P1 = mp.Process(target=SumImpaire, args=(T,variable_partagee, Sem))
+    P2 = mp.Process(target=SumPaire, args=(T, variable_partagee, Sem))
     P1.start()
     P2.start()
+    P1.join()
+    P2.join()
 
-    partP = receive.recv()
-    partI = receive.recv()
-
-    print(f"partie paire {partP}, partie impaire {partI}, total {partP+partI}")
+    print(f"total {variable_partagee.value}")
     print(f"en fait {sum([i for i in range(103)])}")
