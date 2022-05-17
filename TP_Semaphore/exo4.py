@@ -1,24 +1,28 @@
 import multiprocessing as mp
+import time
 
-def rdv1 (cond):
-    with cond:
-        cond.wait()
-        print("rdv1")
 
-def rdv2 (cond):
-    with cond:
-        cond.wait()
-        print("rdv2")
+def rdv1(cond1, cond2):
+    cond1.release()
+    cond2.acquire()
+    print("rdv1")
+
+
+def rdv2(cond1, cond2):
+    cond2.release()
+    cond1.acquire()
+    print("rdv2")
 
 
 if __name__ == "__main__":
-    cond = mp.Condition()
+    cond1 = mp.Semaphore()
+    cond2 = mp.Semaphore()
 
+    P1 = mp.Process(target=rdv1, args=(cond1, cond2))
+    P2 = mp.Process(target=rdv2, args=(cond1, cond2))
 
-    P1 = mp.Process(target = rdv1, args = (cond,))
-    P2 = mp.Process(target = rdv2, args = (cond,))
-
-    cond.notify_all()
+    P1.start()
+    P2.start()
 
     P1.join()
     P2.join()
