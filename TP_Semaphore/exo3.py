@@ -2,7 +2,7 @@ import multiprocessing as mp
 import random
 
 
-def travailleur(queue, lock):
+def travailleur(queue):
     for i in range(50):
         a = random.randint(0, 100)
         queue.put(a)
@@ -11,7 +11,9 @@ def travailleur(queue, lock):
 def consommateur(queue, lock):
     S = 0
     with lock:
-        S += queue.get()
+        while not queue.empty():
+            S += queue.get()
+    queue.put(S)
 
 
 if __name__ == '__main__':
@@ -27,14 +29,12 @@ if __name__ == '__main__':
 
     P1.start()
     P2.start()
-    C1.start()
-    C2.start()
-
-    while not Q1.empty() or not Q2.empty():
-        C1.start()
-        
-
     P1.join()
     P2.join()
+
+    C1.start()
+    C2.start()
     C1.join()
     C2.join()
+
+    print(Q1.get(), Q2.get())
