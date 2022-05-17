@@ -1,21 +1,28 @@
+import signal
+import time
+import sys
+import os
 import multiprocessing as mp
-import os, time, signal
 
-def F(rien):
+
+def arreterProgramme():
+    """Fonction appelée quand vient l'heure d’arrêter notre programme"""
+    print("  C'est l'heure d’arrêt !")
+    sys.exit(0)
+
+
+def F():
     while True:
         time.sleep(1)
         print("boucle du fils")
+        signal.signal(signal.SIGINT, arreterProgramme)
 
-def sendSignal(pid, sig) : 
-    os.kill(pid,sig)
-    print("Processus [%d] envoi le signal %d au processus %d" %(os.getpid(), sig, pid)) 
 
-    
-if __name__ =="__main__":
-    Process = mp.Process(target= F, args =(None,))
+if __name__ == "__main__":
+    Process = mp.Process(target=F)
 
     Process.start()
 
-    for i in range(5):
+    for i in range(50):
         time.sleep(1)
         print(f"tour n° {i}")
