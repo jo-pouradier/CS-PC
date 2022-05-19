@@ -1,6 +1,4 @@
 import multiprocessing as mp
-import time
-
 
 def rdv1(cond1, cond2):
     cond1.release()
