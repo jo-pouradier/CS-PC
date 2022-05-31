@@ -4,6 +4,7 @@ import sys
 import time
 import random
 import math
+import numpy
 
 
 def CalculSequentiel(N: int):
@@ -37,23 +38,28 @@ if __name__ == '__main__':
     print(
         f"Durée du calcul mono Process : {math.floor(10000*(end-start))/10000} s")
 
-    Nb_process = 6
-    Process = [i for i in range(Nb_process)]
-    Pipe_PI_receive, Pipe_PI_send= mp.Pipe()
+    temps_calcul_multi = []
+    for o in range(10):
+        Nb_process = 2
+        Process = [i for i in range(Nb_process)]
+        Pipe_PI_receive, Pipe_PI_send = mp.Pipe()
 
-    startP = time.time()
-    for i in range(Nb_process):
-        Process[i] = mp.Process(target=CalculParallel,
-                                args=(N/Nb_process, Pipe_PI_send))
-        Process[i].start()
-    for i in range(Nb_process):
-        Process[i].join()
-    endP = time.time()
+        startP = time.time()
+        for i in range(Nb_process):
+            Process[i] = mp.Process(target=CalculParallel,
+                                    args=(N/Nb_process, Pipe_PI_send))
+            Process[i].start()
+        for i in range(Nb_process):
+            Process[i].join()
+        endP = time.time()
 
-    estimation_pi_multiP = 0
-    for i in range(Nb_process):
-        estimation_pi_multiP += Pipe_PI_receive.recv()/N*Nb_process
+        estimation_pi_multiP = 0
+        for i in range(Nb_process):
+            estimation_pi_multiP += Pipe_PI_receive.recv()/N * 4
 
-    print(f"estimation de pi en mono process : PI = {estimation_pi_multiP}")
-    print(
-        f"Durée du calcul mono Process : {math.floor(10000*(endP-startP))/10000} s")
+        print(f"test num {o}")
+        print(
+            f"estimation de pi en multi Process : PI = {estimation_pi_multiP}")
+        print(
+            f"Durée du calcul multi Process : {math.floor(10000*(endP-startP))/10000} s\n")
+        temps_calcul_multi.append(math.floor(10000*(endP-startP))/10000)
