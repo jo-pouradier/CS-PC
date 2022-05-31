@@ -4,7 +4,7 @@ import sys
 import time
 import random
 import math
-import numpy
+from matplotlib import pyplot as plt
 
 
 def CalculSequentiel(N: int):
@@ -39,7 +39,9 @@ if __name__ == '__main__':
         f"Durée du calcul mono Process : {math.floor(10000*(end-start))/10000} s")
 
     temps_calcul_multi = []
-    for o in range(10):
+    approximation = 0
+    nbr_iterations = 10
+    for o in range(nbr_iterations):
         Nb_process = 2
         Process = [i for i in range(Nb_process)]
         Pipe_PI_receive, Pipe_PI_send = mp.Pipe()
@@ -63,3 +65,11 @@ if __name__ == '__main__':
         print(
             f"Durée du calcul multi Process : {math.floor(10000*(endP-startP))/10000} s\n")
         temps_calcul_multi.append(math.floor(10000*(endP-startP))/10000)
+        approximation += estimation_pi_multiP
+
+    plt.plot([i for i in range(10)], temps_calcul_multi)
+    plt.xlabel("nbr de process")
+    plt.ylabel("temps de calcul")
+    plt.title(
+        f"Temps de calcul d'une approximation de PI : {approximation/nbr_iterations}\navec {N} iterations")
+    plt.show()
