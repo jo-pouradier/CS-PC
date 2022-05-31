@@ -66,60 +66,81 @@ def en_rouge(): print(CL_RED, end='')  # Un exemple !
 # La tache d'un cheval
 
 
-def un_cheval(ma_ligne: int, keep_running):  # ma_ligne commence à 0
+def un_cheval(ma_ligne: int, keep_running, longueur, lyst_colors, lock, mes_positions):  # ma_ligne commence à 0
     col = 1
-    lyst_colors = [CL_WHITE, CL_RED, CL_GREEN, CL_BROWN, CL_BLUE, CL_MAGENTA, CL_CYAN, CL_GRAY,
-                   CL_DARKGRAY, CL_LIGHTRED, CL_LIGHTGREEN,  CL_LIGHTBLU, CL_YELLOW, CL_LIGHTMAGENTA, CL_LIGHTCYAN]
-    LONGEUR_COURSE = 100
-    # Tout le monde aura
-
-    while col < LONGEUR_COURSE and keep_running.value:
-        move_to(ma_ligne+1, col)         # pour effacer toute ma ligne
-        erase_line_from_beg_to_curs()
+    dessin = ["  _____\o/", "/|   " +
+              chr(ord('A')+ma_ligne) + "  | ", "  /-----\."]
+    while col < longueur and keep_running.value:
+        lock.acquire()
         en_couleur(lyst_colors[ma_ligne % len(lyst_colors)])
-        print('('+chr(ord('A')+ma_ligne)+'>')
-
+        for i, d in enumerate(dessin):
+            move_to(ma_ligne*len(dessin)+1+i, col)
+            erase_line_from_beg_to_curs()
+            print(d)
+        # print('('+chr(ord('A')+ma_ligne)+'>')
+        mes_positions[ma_ligne] = col
         col += 1
+        lock.release()
 
         try:  # En cas d'interruption
-            time.sleep(0.1 * random.randint(1, 5))
+            time.sleep(0.1 * random.randint(1, 8))
         finally:
             pass
-
+    sys.exit(0)
 # ------------------------------------------------
 
 
-def prise_en_compte_signaux(signum, frame):
+def prise_en_compte_signaux(signum, frame, Nb_process, mes_process, arbitre):
     # On vient ici en cas de CTRL-C p. ex.
-    move_to(Nb_process+11, 1)
+    move_to(Nb_process*3+10, 1)
     print(
         f"Il y a eu interruption No {signum} au clavier ..., on finit proprement")
 
     for i in range(Nb_process):
         mes_process[i].terminate()
 
-    move_to(Nb_process+12, 1)
+    arbitre.terminate()
+    move_to(Nb_process*3+11, 1)
     curseur_visible()
     en_couleur(CL_WHITE)
     print("Fini")
     sys.exit(0)
+
 # ---------------------------------------------------
 
 
-# La partie principale :
-if __name__ == "__main__":
+def Arbitre(running, mes_positions, lock, longueur, Nb_process):
+    maxi = 0
+    mini = 0
+    while running.value:
+        lock.acquire()
+        lst = mes_positions[:]
+        if lst[maxi] != longueur - 1:
+            maxi = lst.index(max(lst))
+        if lst[mini] != longueur - 1:
+            mini = lst.index(min(lst))
+        move_to(Nb_process*3+8, 1)
+        en_couleur(CL_WHITE)
+        print(
+            f"Premier: {chr(ord('A')+maxi)}, et le dernier: {chr(ord('A')+mini)}")
+        lock.release()
+        if lst[mini] == longueur-1:
+            running.value = False
+        time.sleep(0.1)
+    sys.exit(0)
 
+# ---------------------------------------------------
+
+
+if __name__ == "__main__":
     # Une liste de couleurs à affecter aléatoirement aux chevaux
     lyst_colors = [CL_WHITE, CL_RED, CL_GREEN, CL_BROWN, CL_BLUE, CL_MAGENTA, CL_CYAN, CL_GRAY,
                    CL_DARKGRAY, CL_LIGHTRED, CL_LIGHTGREEN,  CL_LIGHTBLU, CL_YELLOW, CL_LIGHTMAGENTA, CL_LIGHTCYAN]
-
-    # Tout le monde aura la même copie (donc no need to have a 'value')
-    LONGEUR_COURSE = 150
-
+    longueur_course = 100
     keep_running = mp.Value(ctypes.c_bool, True)
-
-    Nb_process = 10
+    Nb_process = 8
     mes_process = [0 for i in range(Nb_process)]
+    mes_positions = mp.Array('i', Nb_process)
 
     signal.signal(signal.SIGINT, prise_en_compte_signaux)
     signal.signal(signal.SIGQUIT, prise_en_compte_signaux)
@@ -127,17 +148,24 @@ if __name__ == "__main__":
     effacer_ecran()
     curseur_invisible()
 
-    for i in range(Nb_process):  # Lancer     Nb_process  processus
-        mes_process[i] = mp.Process(target=un_cheval, args=(i, keep_running))
+    lock = mp.Lock()
+    for i in range(Nb_process):
+        mes_process[i] = mp.Process(
+            target=un_cheval, args=(i, keep_running, longueur_course, lyst_colors, lock, mes_positions))
         mes_process[i].start()
 
-    move_to(Nb_process+10, 1)
+    arbitre = mp.Process(target=Arbitre, args=(
+        keep_running, mes_positions, lock, longueur_course, Nb_process))
+    arbitre.start()
+
+    move_to(Nb_process*3+5, 1)
+    en_couleur(CL_WHITE)
     print("tous lancés, Controle-C pour tout arrêter")
 
     # On attend la fin de la course
     for i in range(Nb_process):
         mes_process[i].join()
-
-    move_to(Nb_process+12, 1)
+    arbitre.join()
+    move_to(Nb_process*3+6, 1)
     curseur_visible()
     print("Fini")
