@@ -61,7 +61,6 @@ def en_couleur(Coul): print(Coul, end='')
 def en_rouge(): print(CL_RED, end='')  # Un exemple !
 
 # -------------------------------------------------------
-# La tache d'un cheval
 
 
 def un_cheval(ma_ligne: int, keep_running, longueur, lyst_colors, lock, mes_positions):  # ma_ligne commence à 0
@@ -85,6 +84,7 @@ def un_cheval(ma_ligne: int, keep_running, longueur, lyst_colors, lock, mes_posi
         finally:
             pass
     sys.exit(0)
+
 # ------------------------------------------------
 
 

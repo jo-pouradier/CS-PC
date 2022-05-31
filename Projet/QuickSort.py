@@ -3,8 +3,6 @@ import sys
 import ctypes
 import random as rdm
 
-from numpy import nbytes
-
 
 def qsort_serie_sequentiel_avec_listes(liste, Tableau_trier, bool_trier, lock):
     if bool_trier.value:
@@ -20,8 +18,10 @@ def qsort_serie_sequentiel_avec_listes(liste, Tableau_trier, bool_trier, lock):
     lock.acquire()
     # Trier chaque moitié "gauche" et "droite" pour regrouper en plaçant "gche" "Pivot" "drte"
     for i in range(len(Tableau_trier)):
+        print(len(Tableau_trier[i:(i+len(tableau_fini))]),
+              ' , ', len(tableau_fini))
         if Tableau_trier[i] == 0:
-            Tableau_trier[i:(i+len(tableau_fini)-1)] = tableau_fini
+            Tableau_trier[i:(i+len(tableau_fini))] = tableau_fini
     lock.release()
 
 
@@ -38,12 +38,12 @@ if __name__ == '__main__':
 
     Nb_process = 8
     processes = [i for i in range(Nb_process)]
-    for i in range(Nb_process):
-        processes[i] = mp.Process(target=qsort_serie_sequentiel_avec_listes, args=(
-            Tableau[i:int((i+1)*longueur_tableau / Nb_process)], Tableau_trier, bool_trier, lock))
-        processes[i].start()
-
-    for i in range(Nb_process):
-        processes[i].join()
+    while not bool_trier.value:
+        for i in range(Nb_process):
+            processes[i] = mp.Process(target=qsort_serie_sequentiel_avec_listes, args=(
+                Tableau[i:int((i+1)*(longueur_tableau / Nb_process))], Tableau_trier, bool_trier, lock))
+            processes[i].start()
+        for i in range(Nb_process):
+            processes[i].join()
 
     print(f"Le tableau est trier : {Tableau_trier[:]}")
