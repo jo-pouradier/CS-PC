@@ -129,6 +129,7 @@ def Arbitre(running, mes_positions, lock, longueur, Nb_process):
         if lst[mini] >= longueur-1:
             running.value = False
         time.sleep(0.1)
+    time.sleep(2)
     sys.exit(0)
 
 # ---------------------------------------------------
