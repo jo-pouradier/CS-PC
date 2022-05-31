@@ -6,9 +6,7 @@ import signal
 import ctypes
 import sys
 import random
-import math
 import time
-import os
 import multiprocessing as mp
 
 CLEARSCR = "\x1B[2J\x1B[;H"  # Clear SCreen
@@ -72,6 +70,7 @@ def un_cheval(ma_ligne: int, keep_running, longueur, lyst_colors, lock, mes_posi
               chr(ord('A')+ma_ligne) + "  | ", "  /-----\."]
     while col < longueur and keep_running.value:
         lock.acquire()
+        col += 3
         en_couleur(lyst_colors[ma_ligne % len(lyst_colors)])
         for i, d in enumerate(dessin):
             move_to(ma_ligne*len(dessin)+1+i, col)
@@ -79,7 +78,6 @@ def un_cheval(ma_ligne: int, keep_running, longueur, lyst_colors, lock, mes_posi
             print(d)
         # print('('+chr(ord('A')+ma_ligne)+'>')
         mes_positions[ma_ligne] = col
-        col += 1
         lock.release()
 
         try:  # En cas d'interruption
@@ -115,16 +113,20 @@ def Arbitre(running, mes_positions, lock, longueur, Nb_process):
     while running.value:
         lock.acquire()
         lst = mes_positions[:]
-        if lst[maxi] != longueur - 1:
+        if lst[maxi] >= longueur - 1:
+            pass
+        else:
             maxi = lst.index(max(lst))
-        if lst[mini] != longueur - 1:
+        if lst[mini] >= longueur - 1:
+            pass
+        else:
             mini = lst.index(min(lst))
         move_to(Nb_process*3+8, 1)
         en_couleur(CL_WHITE)
         print(
             f"Premier: {chr(ord('A')+maxi)}, et le dernier: {chr(ord('A')+mini)}")
         lock.release()
-        if lst[mini] == longueur-1:
+        if lst[mini] >= longueur-1:
             running.value = False
         time.sleep(0.1)
     sys.exit(0)
