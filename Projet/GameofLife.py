@@ -4,24 +4,24 @@ import sys
 import time
 import os
 import signal
-# Quelques codes d'échappement (tous ne sont pas utilisés)
+# Quelques codes d'echappement (tous ne sont pas utilises)
 CLEARSCR = "\x1B[2J\x1B[;H"  # Clear SCreen
 CLEAREOS = "\x1B[J"  # Clear End Of Screen
 CLEARELN = "\x1B[2K"  # Clear Entire LiNe
 CLEARCUP = "\x1B[1J"  # Clear Curseur UP
 GOTOYX = "\x1B[%.2d;%.2dH"  # ('H' ou 'f') : Goto at (y,x), voir le code
 
-DELAFCURSOR = "\x1B[K"  # effacer après la position du curseur
-CRLF = "\r\n"  # Retour à la ligne
+DELAFCURSOR = "\x1B[K"  # effacer apres la position du curseur
+CRLF = "\r\n"  # Retour a la ligne
 
 # VT100 : Actions sur le curseur
 CURSON = "\x1B[?25h"  # Curseur visible
 CURSOFF = "\x1B[?25l"  # Curseur invisible
 
-# Actions sur les caractères affichables
+# Actions sur les caracteres affichables
 NORMAL = "\x1B[0m"  # Normal
 BOLD = "\x1B[1m"  # Gras
-UNDERLINE = "\x1B[4m"  # Souligné
+UNDERLINE = "\x1B[4m"  # Souligne
 
 
 # VT100 : Couleurs : "22" pour normal intensity
@@ -35,7 +35,7 @@ CL_CYAN = "\033[22;36m"  # Cyan
 CL_GRAY = "\033[22;37m"  # Gris
 
 # "01" pour quoi ? (bold ?)
-CL_DARKGRAY = "\033[01;30m"  # Gris foncé
+CL_DARKGRAY = "\033[01;30m"  # Gris fonce
 CL_LIGHTRED = "\033[01;31m"  # Rouge clair
 CL_LIGHTGREEN = "\033[01;32m"  # Vert clair
 CL_YELLOW = "\033[01;33m"  # Jaune
@@ -45,7 +45,7 @@ CL_LIGHTCYAN = "\033[01;36m"  # Cyan clair
 CL_WHITE = "\033[01;37m"  # Blanc
 # -------------------------------------------------------
 
-# Définition de qq fonctions de gestion de l'écran
+# Definition de qq fonctions de gestion de l'ecran
 
 
 def effacer_ecran(): print(CLEARSCR, end='')
@@ -128,13 +128,17 @@ def display(GRID, LIGNES, COLONNES, r_grid, process):
         time.sleep(0.2)
 
 
-def FinProgram(process,LIGNES):
+def FinProgram(process, LIGNES):
     move_to(LIGNES+8, 0)
     en_rouge()
-    print("Pas de nouvelle génération")
-    print("Fin de la génération")
+    print("Pas de nouvelle generation")
+    print("Fin de la generation")
+    en_couleur(CL_WHITE)
     os.kill(process, signal.SIGKILL)
-    sys.exit(0)
+    time.sleep(1)
+    os.execl(sys.executable, sys.executable, * sys.argv)
+    # sys.exit(0)
+    # # os.execlp("python", "python3", "GameofLife.py")
 
 
 # on arrete tout proprement
@@ -147,7 +151,7 @@ def arreterForcerProgramme(signal, frame):
 signal.signal(signal.SIGINT, arreterForcerProgramme)
 
 if __name__ == '__main__':
-
+    en_couleur(CL_WHITE)
     LIGNES = 40
     COLONNES = 40
     proba = [0 for i in range(15)]
