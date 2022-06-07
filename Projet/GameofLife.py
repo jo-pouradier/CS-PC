@@ -65,27 +65,30 @@ def next_generation(LIGNES, COLONNES, GRID, s_grid):
         for l in range(LIGNES):
             for c in range(COLONNES):
                 # on cherche le nombre de voisins vivant
-                voisin_vivant = 0
-                for i in range(-1, 2):
-                    for j in range(-1, 2):
-                        if ((l+i >= 0 and l+i < LIGNES) and (c+j >= 0 and c+j < COLONNES)):
-                            voisin_vivant += GRID[l + i][c + j]
+                voisin_vivant = get_neighbours(l, c, LIGNES, COLONNES, GRID)
+                # for i in range(-1, 2):
+                #     for j in range(-1, 2):
+                #         if ((l+i >= 0 and l+i < LIGNES) and (c+j >= 0 and c+j < COLONNES)):
+                #             voisin_vivant += GRID[l + i][c + j]
 
                 voisin_vivant -= GRID[l][c]
 
-                # case seul et meurs
-                if GRID[l][c] == 1 and voisin_vivant < 2:
+                if GRID[l][c] == 1 and (voisin_vivant < 2 or voisin_vivant > 3):
                     GRID[l][c] = 0
-
-                # case avec trop de voisin_vivant
-                if GRID[l][c] == 1 and voisin_vivant > 3:
-                    GRID[l][c] = 0
-
-                # case morte avec 3 voisins revit
                 if GRID[l][c] == 0 and voisin_vivant == 3:
                     GRID[l][c] = 1
-
         s_grid.send(GRID)
+
+
+def get_neighbours(x, y, LIGNES, COLONNES, GRID):
+    total = 0
+    for n in range(-1, 2):
+        for m in range(-1, 2):
+            x_edge = (x+n+LIGNES) % LIGNES
+            y_edge = (y+m+COLONNES) % COLONNES
+            total += GRID[x_edge][y_edge]
+    total -= GRID[x][y]
+    return total
 
 
 def areSame(A, B):
@@ -96,7 +99,7 @@ def areSame(A, B):
     return True
 
 
-def display(GRID, LIGNES, COLONNES, r_grid, process):
+def display(GRID, LIGNES, COLONNES, r_grid, process, bool_rejouer):
     # Attention a la copie de la matrice
     GRID_before = [row[:] for row in GRID]
     gen_numb = 0
@@ -117,56 +120,73 @@ def display(GRID, LIGNES, COLONNES, r_grid, process):
         gen_numb += 1
         move_to(len(GRID)+7, 0)
         print(gen_numb)
-
         # arret si pas de changemeent dans la grille
         test = areSame(GRID, GRID_before)
         if test:
-            FinProgram(process, LIGNES)
+            FinProgram(process, LIGNES, bool_rejouer)
 
         GRID_before[:] = GRID[:]
         GRID = r_grid.recv()
-        time.sleep(0.2)
+        time.sleep(0.03)
 
 
-def FinProgram(process, LIGNES):
+def FinProgram(process, LIGNES, bool_rejouer):
     move_to(LIGNES+8, 0)
     en_rouge()
     print("Pas de nouvelle generation")
     print("Fin de la generation")
+    print("<CTRL + Z> pour rejouer")
     en_couleur(CL_WHITE)
+    print("Le programme va s'arreter dans 5 secondes")
     os.kill(process, signal.SIGKILL)
-    time.sleep(1)
-    os.execl(sys.executable, sys.executable, * sys.argv)
-    # sys.exit(0)
-    # # os.execlp("python", "python3", "GameofLife.py")
+    time.sleep(5)
+    bool_rejouer.value = 0
+    sys.exit(0)
 
 
 # on arrete tout proprement
-def arreterForcerProgramme(signal, frame):
+def arretForcerProgramme(signal, frame):
+    bool_rejouer.value = 0
+    lst = mp.active_children()
+    for p in lst:
+        p.kill()
+
+
+def Rejouer(signal, frame):
+    bool_rejouer.value = 1
     lst = mp.active_children()
     for p in lst:
         p.terminate()
 
 
-signal.signal(signal.SIGINT, arreterForcerProgramme)
-
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, arretForcerProgramme)
+    signal.signal(signal.SIGTSTP, Rejouer)
+
     en_couleur(CL_WHITE)
-    LIGNES = 40
-    COLONNES = 40
-    proba = [0 for i in range(15)]
-    proba[0] = 1
-    GRID = [[rand.choice(proba) for i in range(COLONNES)]
+    LIGNES = 60
+    COLONNES = 80
+    GRID = [[rand.randint(0, 1) for i in range(COLONNES)]
             for j in range(LIGNES)]
-    r_grid, s_grid = mp.Pipe()
+
     gen_numb = 0
+    bool_rejouer = mp.Value('i', 0)
+    r_grid, s_grid = mp.Pipe()
 
     next_gen = mp.Process(target=next_generation,
                           args=(LIGNES, COLONNES, GRID, s_grid))
     next_gen.start()
     disp = mp.Process(target=display, args=(
-        GRID, COLONNES, LIGNES, r_grid, next_gen.pid))
+        GRID, COLONNES, LIGNES, r_grid, next_gen.pid, bool_rejouer))
     disp.start()
 
     next_gen.join()
     disp.join()
+
+    if bool_rejouer.value:
+        os.execl(sys.executable, sys.executable, * sys.argv)
+
+    # ne pas oublier de close les deux semaphores
+    r_grid.close()
+    s_grid.close()
+    sys.exit(0)
