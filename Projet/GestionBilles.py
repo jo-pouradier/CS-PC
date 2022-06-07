@@ -53,6 +53,13 @@ def Controlleur(lst_travailleur, nbr_billes_disponible, lock, nbr_travailleur, n
             sys.exit(0)
 
 
+def arreterProgramme(signal, frame):
+    lst = mp.active_children()
+    for p in lst:
+        p.terminate()
+
+signal.signal(signal.SIGINT, arreterProgramme)
+
 if __name__ == '__main__':
     nbr_max_billes = 9
     nbr_billes_disponible = mp.Value('i', nbr_max_billes, lock=True)
