@@ -119,7 +119,7 @@ def display(GRID, LIGNES, COLONNES, r_grid, process, bool_rejouer):
 
         gen_numb += 1
         move_to(len(GRID)+7, 0)
-        print(gen_numb)
+        print(f"Génération n°{gen_numb}")
         # arret si pas de changemeent dans la grille
         test = areSame(GRID, GRID_before)
         if test:
