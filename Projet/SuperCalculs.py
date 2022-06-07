@@ -28,7 +28,7 @@ def fils_demand(commands, stockage, lock):
         operateur = random.choice(['+', '-', '*', '/', '**'])
         str_commande = f"{opd1} {operateur} {opd2}"
         commands.put([id, str_commande])
-        print("Le père va demander à faire : ", str_commande)
+        print(f"Le père {id} va demander à faire : ", str_commande)
         lock.acquire()
         bool_getcalcul = True
         while bool_getcalcul:
@@ -39,7 +39,7 @@ def fils_demand(commands, stockage, lock):
             else:
                 stockage.put(calcul)
         lock.release()
-        print("Le Pere a recu ", res)
+        print(f"Le Pere {id} a recu ", res)
         print('-' * 60)
         time.sleep(1)
     sys.exit(0)
@@ -48,9 +48,9 @@ def fils_demand(commands, stockage, lock):
 if __name__ == "__main__":
     stockage = mp.Queue()
     commands = mp.Queue()
-    nbr_demandeurs = 1
+    nbr_demandeurs = 4
     lst_demandeurs = [0 for i in range(nbr_demandeurs)]
-    nbr_calculateurs = 1
+    nbr_calculateurs = 4
     lst_calculateurs = [0 for i in range(nbr_demandeurs)]
 
     lock = mp.Semaphore()
