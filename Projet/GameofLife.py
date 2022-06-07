@@ -127,7 +127,7 @@ def display(GRID, LIGNES, COLONNES, r_grid, process, bool_rejouer):
 
         GRID_before[:] = GRID[:]
         GRID = r_grid.recv()
-        time.sleep(0.03)
+        time.sleep(0.05)
 
 
 def FinProgram(process, LIGNES, bool_rejouer):
