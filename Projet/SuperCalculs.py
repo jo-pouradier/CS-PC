@@ -31,7 +31,7 @@ def fils_demand(commands, stockage, lock):
         #envoie du calcul aléatoire dans la Queue "commands"
         commands.put([id, str_commande])
         bool_getcalcul = True
-        # attente du calcul
+        # attente du calcul:
         lock.acquire()
         print(f"Le Pere {id} va demander a faire : ", str_commande)
         while bool_getcalcul:
@@ -39,6 +39,7 @@ def fils_demand(commands, stockage, lock):
             # vérification de l'id pour attendre le bon calcul
             if calcul[0] == id:
                 res = calcul[1]
+                # on a enfin le bon resultat, on arrete la boucle
                 bool_getcalcul = False
             else:
                 stockage.put(calcul)
