@@ -54,6 +54,7 @@ def arreterProgramme(signal, frame):
     lst = mp.active_children()
     for p in lst:
         p.terminate()
+    sys.exit(0)
 
 signal.signal(signal.SIGINT, arreterProgramme)
 
@@ -84,3 +85,4 @@ if __name__ == "__main__":
         lst_calculateurs[i].join()
     for i in range(nbr_demandeurs):
         lst_demandeurs[i].join()
+    
