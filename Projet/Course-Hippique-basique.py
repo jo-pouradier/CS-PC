@@ -141,7 +141,7 @@ if __name__ == "__main__":
                    CL_DARKGRAY, CL_LIGHTRED, CL_LIGHTGREEN,  CL_LIGHTBLU, CL_YELLOW, CL_LIGHTMAGENTA, CL_LIGHTCYAN]
     longueur_course = 100
     keep_running = mp.Value(ctypes.c_bool, True)
-    Nb_process = 8
+    Nb_process = 16
     mes_process = [0 for i in range(Nb_process)]
     mes_positions = mp.Array('i', Nb_process)
 

@@ -7,6 +7,7 @@ import signal
 
 
 def Travailleur(k_billes, nbr_billes_disponible, nbr_travailleur):
+    # Chaque travailleur possede son semaphore
     semaphore = mp.Semaphore()
     for k in range(k_billes):
         Demander(k_billes, semaphore, nbr_billes_disponible)
@@ -60,16 +61,21 @@ def arreterProgramme(signal, frame):
 
 signal.signal(signal.SIGINT, arreterProgramme)
 
+
 if __name__ == '__main__':
+    # Mise en place des billes et de la liste des travailleurs
     nbr_max_billes = 9
     nbr_billes_disponible = mp.Value('i', nbr_max_billes, lock=True)
     nbr_travailleur = mp.Value('i', 4, lock=True)
     lst_travailleur = [0 for i in range(nbr_travailleur.value)]
 
+    # Mise en place du controlleur
     lock = mp.Lock()
     controlleur = mp.Process(target=Controlleur, args=(
         lst_travailleur, nbr_billes_disponible, lock, nbr_travailleur, nbr_max_billes))
     controlleur.start()
+
+    # Mise en place des process travailleurs
     for i in range(nbr_travailleur.value):
         nbr_billes_demander = random.randint(0, nbr_max_billes)
         lst_travailleur[i] = mp.Process(

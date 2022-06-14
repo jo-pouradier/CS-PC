@@ -66,13 +66,7 @@ def next_generation(LIGNES, COLONNES, GRID, s_grid):
             for c in range(COLONNES):
                 # on cherche le nombre de voisins vivant
                 voisin_vivant = get_neighbours(l, c, LIGNES, COLONNES, GRID)
-                # for i in range(-1, 2):
-                #     for j in range(-1, 2):
-                #         if ((l+i >= 0 and l+i < LIGNES) and (c+j >= 0 and c+j < COLONNES)):
-                #             voisin_vivant += GRID[l + i][c + j]
-
                 voisin_vivant -= GRID[l][c]
-
                 if GRID[l][c] == 1 and (voisin_vivant < 2 or voisin_vivant > 3):
                     GRID[l][c] = 0
                 if GRID[l][c] == 0 and voisin_vivant == 3:
@@ -150,6 +144,7 @@ def arretForcerProgramme(signal, frame):
     lst = mp.active_children()
     for p in lst:
         p.kill()
+    print("Arret forcer du programme")
 
 
 def Rejouer(signal, frame):
