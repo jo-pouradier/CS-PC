@@ -30,10 +30,10 @@ def fils_demand(commands, stockage, lock):
         str_commande = f"{opd1} {operateur} {opd2}"
         #envoie du calcul aléatoire dans la Queue "commands"
         commands.put([id, str_commande])
-        print(f"Le Pere {id} va demander à faire : ", str_commande)
+        bool_getcalcul = True
         # attente du calcul
         lock.acquire()
-        bool_getcalcul = True
+        print(f"Le Pere {id} va demander a faire : ", str_commande)
         while bool_getcalcul:
             calcul = stockage.get()
             # vérification de l'id pour attendre le bon calcul
