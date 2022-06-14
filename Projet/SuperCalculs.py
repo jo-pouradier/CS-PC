@@ -48,7 +48,7 @@ def fils_demand(commands, stockage, lock):
         #création d'un calcul après une seconde
         time.sleep(1)
 
-
+# Arret "propre" des Process lors de l'arret forcer avec ctrl-C
 def arreterProgramme(signal, frame):
     lst = mp.active_children()
     for p in lst:

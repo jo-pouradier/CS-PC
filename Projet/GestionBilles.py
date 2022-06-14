@@ -4,13 +4,16 @@ import time
 import sys
 import os
 import signal
+import random as rand
 
 
 def Travailleur(k_billes, nbr_billes_disponible, nbr_travailleur):
     # Chaque travailleur possede son semaphore
     semaphore = mp.Semaphore()
-    for k in range(k_billes):
+    m = rand.randint(3, 7)
+    for k in range(m):
         Demander(k_billes, semaphore, nbr_billes_disponible)
+        #fausse tache a effectuer
         time.sleep(0.2*k_billes)
         Rendre(k_billes, nbr_billes_disponible, semaphore)
     print(f"{os.getpid()} a finit")
@@ -20,11 +23,13 @@ def Travailleur(k_billes, nbr_billes_disponible, nbr_travailleur):
 
 
 def Demander(k_billes, semaphore, nbr_billes_disponible):
+    # section critique
     semaphore.acquire()
     while nbr_billes_disponible.value < k_billes:
         semaphore.release()
         semaphore.acquire()
     semaphore.release()
+    # fin de la section critique
     print(f"{os.getpid()} a reussi a avoir {k_billes} billes")
     nbr_billes_disponible.value -= k_billes
 
@@ -38,12 +43,12 @@ def Rendre(k_billes, nbr_billes_disponible, semaphore):
 def Controlleur(lst_travailleur, nbr_billes_disponible, lock, nbr_travailleur, nbr_max_billes):
     while True:
         with lock:
-            prbl = (nbr_billes_disponible.value <
-                    0 and nbr_billes_disponible.value > nbr_max_billes)
+            prbl = (nbr_billes_disponible.value < 0 and nbr_billes_disponible.value > nbr_max_billes)
         if not prbl:
             time.sleep(1)
             print("tt est bon")
         else:
+            # arret si probleme sur le nombre de billes
             print("prbl nbr de billes disponible")
             print("On arrete tout")
             for p in lst_travailleur:
@@ -71,17 +76,16 @@ if __name__ == '__main__':
 
     # Mise en place du controlleur
     lock = mp.Lock()
-    controlleur = mp.Process(target=Controlleur, args=(
-        lst_travailleur, nbr_billes_disponible, lock, nbr_travailleur, nbr_max_billes))
+    controlleur = mp.Process(target=Controlleur, args=(lst_travailleur, nbr_billes_disponible, lock, nbr_travailleur, nbr_max_billes))
     controlleur.start()
 
     # Mise en place des process travailleurs
     for i in range(nbr_travailleur.value):
-        nbr_billes_demander = random.randint(0, nbr_max_billes)
-        lst_travailleur[i] = mp.Process(
-            target=Travailleur, args=(nbr_billes_demander, nbr_billes_disponible, nbr_travailleur))
+        nbr_billes_demander = random.randint(3, 8)
+        lst_travailleur[i] = mp.Process(target=Travailleur, args=(nbr_billes_demander, nbr_billes_disponible, nbr_travailleur))
         lst_travailleur[i].start()
 
+    # attente des Process
     for i in range(nbr_travailleur.value):
         lst_travailleur[i].join()
     controlleur.join()
