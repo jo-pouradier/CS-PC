@@ -28,7 +28,6 @@ def Demander(k_billes, semaphore, nbr_billes_disponible):
         semaphore.release()
         time.sleep(0.1) # on laisse du temps pour les autre process
         semaphore.acquire()
-        
     nbr_billes_disponible.value -= k_billes
     print(f"{os.getpid()} a reussi a avoir {k_billes} billes")
     semaphore.release()
